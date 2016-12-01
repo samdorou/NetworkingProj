@@ -4,4 +4,5 @@
  
  Members:
   Sam Doroudi
+  & 
   Esmond Liang
