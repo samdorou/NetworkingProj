@@ -87,6 +87,46 @@ $cbr0 set interval_ 0.005
 $cbr0 set random_ 1
 $cbr0 attach-agent $udp0
 
+#Set Queue Size of links
+#queue limit for yellow links
+$ns queue-limit $n0 $n13 10
+$ns queue-limit $n0 $n14 10
+$ns queue-limit $n0 $n15 10
+$ns queue-limit $n0 $n16 10
+
+$ns queue-limit $n1 $n7 10
+$ns queue-limit $n1 $n8 10
+$ns queue-limit $n1 $n9 10
+$ns queue-limit $n1 $n10 10
+$ns queue-limit $n1 $n11 10
+$ns queue-limit $n1 $n12 10
+
+$ns queue-limit $n4 $n17 10
+$ns queue-limit $n4 $n18 10
+$ns queue-limit $n4 $n19 10
+$ns queue-limit $n4 $n20 10
+
+$ns queue-limit $n5 $n21 10
+$ns queue-limit $n5 $n22 10
+$ns queue-limit $n5 $n23 10
+$ns queue-limit $n5 $n24 10
+
+$ns queue-limit $n6 $n25 10
+$ns queue-limit $n6 $n26 10
+$ns queue-limit $n6 $n27 10
+$ns queue-limit $n6 $n28 10
+
+#queue for purple links
+$ns queue-limit $n2 $n4 15
+$ns queue-limit $n3 $n5 15
+$ns queue-limit $n3 $n6 15
+
+#queue for black links
+$ns queue-limit $n0 $n1 20
+$ns queue-limit $n0 $n2 20
+$ns queue-limit $n2 $n3 20
+$ns queue-limit $n1 $n3 20
+
 #LossMonitor traffic consumer at dest. per RED connection
 #n7 to -->> 15, 16, 17, 19, 21, 24, 25, 26
 
