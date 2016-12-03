@@ -48,17 +48,11 @@ proc attach-cbr-traffic {node sink size interval random id} {
 
 ##
 proc finish {} {
-   # global ns tracefd
-    #$ns flush-trace        
-    #close $tracefd
-    #exec nam trace.nam & 
-
-    #exit 0
-    global ns nf
+   	global ns tracefd
     
-    $ns flush-trace
-    #Close the trace file
-    close $nf
+    $ns flush-trace        
+    close $tracefd
+    exec nam trace.nam & 
 
     exit 0
 }
@@ -71,11 +65,11 @@ $ns color 14027 BLUE
 $ns color 12028 GREEN
 $ns color 13028 GREEN
 
-#Create a trace files
+#Create trace files
 set tracefd [open Sam_Esmond.tr w]
 $ns trace-all $tracefd
 
-set nf [open Sam_Esmond_Trace.nam w]
+set nf [open trace.nam w]
 $ns namtrace-all $nf
 
 #Create nodes (0 - 28)
