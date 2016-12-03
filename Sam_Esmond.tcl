@@ -1,14 +1,80 @@
-### Sam Doroudi & Esmond Liang
-### CS436
+###############################################################
+# Sam Doroudi & Esmond Liang
+# CS436
+# Networking Project ns2
+###############################################################
+
+#Functions make life easier
+##EXP traffic
+proc attach-exp-traffic {node sink size burst idle rate id} {
+	set ns [Simulator instance]
+
+	#create UDP
+	set source [new Agent/UDP]
+	$ns attach-agent $node $source
+
+	set traffic [new Application/Traffic/Exponential]
+	$traffic set packetSize_ $size
+	$traffic set burst_time_ $burst
+	$traffic set idle_time_ $idle
+	$traffic set rate_ $rate
+	$traffic attach-agent $source
+	
+	#Connect
+	$ns connect $source $sink
+	$source set fid_ $id
+	return $traffic
+}
+
+##CBR traffic
+proc attach-cbr-traffic {node sink size interval random id} {
+	set ns [Simulator instance]
+
+	#create UDP 
+	set source [new Agent/UDP]
+	$ns attach-agent $node $source
+
+	set traffic [new Application/Traffic/CBR]
+	$traffic set packetSize_ $size
+	$traffic set interval_ $interval
+	$traffic set random_ $random
+    
+    $traffic attach-agent $source
+	#Connect
+	$ns connect $source $sink
+	$source set fid_ $id
+	return $traffic
+}
+
+##
+proc close {} {
+    global ns tracefd
+	
+	$ns flush-trace        
+
+	close $tracefd
+	exec nam Sam_Esmond_Trace.nam & 
+
+    exit 0
+}
 
 #Create a simulator object
 set ns [new Simulator]
 
-#Create a trace file
+$ns color 7019 RED
+$ns color 14027 BLUE
+$ns color 12028 GREEN
+$ns color 13028 GREEN
+
+#Create a trace files
 set tracefd [open Sam_Esmond.tr w]
 $ns trace-all $tracefd
 
-#Create 29 nodes
+set nf [open Sam_Esmond_Trace.nam w]
+$ns namtrace-all $nf
+
+#Create nodes (0 - 28)
+#We could've done a for loop
 set n0 [$ns node]
 set n1 [$ns node]
 set n2 [$ns node]
@@ -76,19 +142,10 @@ $ns duplex-link $n2 $n4 2Mb 40ms DropTail
 $ns duplex-link $n3 $n5 2Mb 40ms DropTail
 $ns duplex-link $n3 $n6 2Mb 40ms DropTail
 
-#Create UDP at node 7
-set udp0 [new Agent/UDP]
-$ns attach-agent $n7 $udp0
-
-#Create CBR traffic attach to udp0
-set cbr0 [new Application/Traffic/CBR]
-$cbr0 set packetSize_ 1500
-$cbr0 set interval_ 0.005
-$cbr0 set random_ 1
-$cbr0 attach-agent $udp0
+###
 
 #Set Queue Size of links
-#queue limit for yellow links
+#queue limit for YELLOW links
 $ns queue-limit $n0 $n13 10
 $ns queue-limit $n0 $n14 10
 $ns queue-limit $n0 $n15 10
@@ -116,17 +173,158 @@ $ns queue-limit $n6 $n26 10
 $ns queue-limit $n6 $n27 10
 $ns queue-limit $n6 $n28 10
 
-#queue for purple links
+#queue for PURPLE links
 $ns queue-limit $n2 $n4 15
 $ns queue-limit $n3 $n5 15
 $ns queue-limit $n3 $n6 15
 
-#queue for black links
+#queue for BLACK links
 $ns queue-limit $n0 $n1 20
 $ns queue-limit $n0 $n2 20
 $ns queue-limit $n2 $n3 20
 $ns queue-limit $n1 $n3 20
 
-#LossMonitor traffic consumer at dest. per RED connection
-#n7 to -->> 15, 16, 17, 19, 21, 24, 25, 26
+#Create traffic for BLUE
+set sink8 [new Agent/LossMonitor]
+set sink9 [new Agent/LossMonitor]
+set sink11 [new Agent/LossMonitor]
+set sink18 [new Agent/LossMonitor]
+set sink20 [new Agent/LossMonitor]
+set sink23 [new Agent/LossMonitor]
 
+$ns attach-agent $n14 $sink8
+$ns attach-agent $n14 $sink9
+$ns attach-agent $n14 $sink11
+$ns attach-agent $n14 $sink18
+$ns attach-agent $n14 $sink20
+$ns attach-agent $n14 $sink23
+
+#Create traffic for RED
+set sink15 [new Agent/LossMonitor]
+set sink16 [new Agent/LossMonitor]
+set sink17 [new Agent/LossMonitor]
+set sink19 [new Agent/LossMonitor]
+set sink21 [new Agent/LossMonitor]
+set sink24 [new Agent/LossMonitor]
+set sink25 [new Agent/LossMonitor]
+set sink26 [new Agent/LossMonitor]
+
+$ns attach-agent $n7 $sink15
+$ns attach-agent $n7 $sink16
+$ns attach-agent $n7 $sink17
+$ns attach-agent $n7 $sink19
+$ns attach-agent $n7 $sink21
+$ns attach-agent $n7 $sink24
+$ns attach-agent $n7 $sink25
+$ns attach-agent $n7 $sink26
+
+#Create traffic for GREEN
+set sink28_1 [new Agent/LossMonitor]
+set sink28_2 [new Agent/LossMonitor]
+
+$ns attach-agent $n28 $sink28_1
+$ns attach-agent $n28 $sink28_2
+
+###now connect clients to servers
+
+#RED connection --> server 7
+set Red7to15 [attach-cbr-traffic $n7 $sink15 1500 0.005 1 0]
+set Red7to16 [attach-cbr-traffic $n7 $sink16 1500 0.005 1 0]
+set Red7to17 [attach-cbr-traffic $n7 $sink17 1500 0.005 1 0]
+set Red7to19 [attach-cbr-traffic $n7 $sink19 1500 0.005 1 7019]
+set Red7to21 [attach-cbr-traffic $n7 $sink21 1500 0.005 1 0]
+set Red7to24 [attach-cbr-traffic $n7 $sink24 1500 0.005 1 0]
+set Red7to25 [attach-cbr-traffic $n7 $sink25 1500 0.005 1 0]
+set Red7to26 [attach-cbr-traffic $n7 $sink26 1500 0.005 1 0]
+
+#BLUE connecton --> server 14
+set Blue14to8  [attach-exp-traffic $n14 $sink8 2000 0.5s 0.5s 2000000 0]
+set Blue14to9  [attach-exp-traffic $n14 $sink9 2000 0.5s 0.5s 2000000 0]
+set Blue14to11 [attach-exp-traffic $n14 $sink11 2000 0.5s 0.5s 2000000 0]
+set Blue14to18 [attach-exp-traffic $n14 $sink18 2000 0.5s 0.5s 2000000 0]
+set Blue14to20 [attach-exp-traffic $n14 $sink20 2000 0.5s 0.5s 2000000 0]
+set Blue14to23 [attach-exp-traffic $n14 $sink23 2000 0.5s 0.5s 2000000 0]
+set Blue14to27 [attach-exp-traffic $n14 $sink27 2000 0.5s 0.5s 2000000 14027]
+
+#Server 12
+#TCP at n12
+set tcp12 [new Agent/TCP]
+$tcp12 set class_ 2 
+$ns attach-agent $n12 $tcp12
+
+#CBR traffic at udp12
+set GREEN12to28 [new Application/Traffic/CBR]
+$GREEN12to28 set packetSize_ 1000
+$GREEN12to28 set interval_ 0.005
+$GREEN12to28 set random_ 1
+$GREEN12to28 attach-agent $tcp12
+
+#Server 13
+#TCP at n13
+set tcp13 [new Agent/TCP]
+$tcp13 set class_ 2
+$ns attach-agent $n13 $tcp13
+
+#CBR traffic att udp13
+set GREEN13to28 [new Application/Traffic/CBR]
+$GREEN13to28 set packetSize_ 1000
+$GREEN13to28 set interval_ 0.005
+$GREEN13to28 set random_ 1
+$GREEN13to28 attach-agent $tcp13
+
+#Green connection --> Server 12 & 13
+$ns connect $tcp12 $sink28_1
+$tcp12 set fid_ 12028
+
+$ns connect $tcp13 $sink28_2
+$tcp13 set fid_ 13028
+
+#Times
+$ns at 1.0s "$RED7to15 start"
+$ns at 1.0s "$RED7to16 start"
+$ns at 1.0s "$RED7to17 start"
+$ns at 1.0s "$RED7to19 start"
+$ns at 1.0s "$RED7to21 start"
+$ns at 1.0s "$RED7to24 start"
+$ns at 1.0s "$RED7to25 start"
+$ns at 1.0s "$RED7to26 start"
+
+$ns at 2.0s "$BLUE14to8 start"
+$ns at 2.0s "$BLUE14to9 start"
+$ns at 2.0s "$BLUE14to11 start"
+$ns at 2.0s "$BLUE14to18 start" 
+$ns at 2.0s "$BLUE14to20 start" 
+$ns at 2.0s "$BLUE14to23 start" 
+$ns at 2.0s "$BLUE14to27 start" 
+
+$ns at 3.0 "$GREEN12to28 start"
+$ns at 4.0 "$GREEN13to28 start"
+
+$ns rtmodel-at 6.0 down $n(2) $n(3)
+$ns rtmodel-at 7.0 up $n(2) $n(3)
+
+$ns at 10.0s "$RED7to15 stop"
+$ns at 10.0s "$RED7to16 stop"
+$ns at 10.0s "$RED7to17 stop"
+$ns at 10.0s "$RED7to19 stop"
+$ns at 10.0s "$RED7to21 stop"
+$ns at 10.0s "$RED7to24 stop"
+$ns at 10.0s "$RED7to25 stop"
+$ns at 10.0s "$RED7to26 stop"
+
+$ns at 10.0s "$BLUE14to8 stop"
+$ns at 10.0s "$BLUE14to9 stop"
+$ns at 10.0s "$BLUE14to11 stop"
+$ns at 10.0s "$BLUE14to18 stop" 
+$ns at 10.0s "$BLUE14to20 stop" 
+$ns at 10.0s "$BLUE14to23 stop" 
+$ns at 10.0s "$BLUE14to27 stop"
+
+$ns at 10.0s "$GREEN12to28 stop"
+$ns at 10.0s "$GREEN13to28 stop"
+
+#Wrap it up
+$ns at 10.0 "close"
+
+#Run
+$ns run
