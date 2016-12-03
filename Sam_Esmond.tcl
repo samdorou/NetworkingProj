@@ -47,13 +47,18 @@ proc attach-cbr-traffic {node sink size interval random id} {
 }
 
 ##
-proc close {} {
-    global ns tracefd
-	
-	$ns flush-trace        
+proc finish {} {
+   # global ns tracefd
+    #$ns flush-trace        
+    #close $tracefd
+    #exec nam trace.nam & 
 
-	close $tracefd
-	exec nam Sam_Esmond_Trace.nam & 
+    #exit 0
+    global ns nf
+    
+    $ns flush-trace
+    #Close the trace file
+    close $nf
 
     exit 0
 }
@@ -191,6 +196,7 @@ set sink11 [new Agent/LossMonitor]
 set sink18 [new Agent/LossMonitor]
 set sink20 [new Agent/LossMonitor]
 set sink23 [new Agent/LossMonitor]
+set sink27 [new Agent/LossMonitor]
 
 $ns attach-agent $n14 $sink8
 $ns attach-agent $n14 $sink9
@@ -198,6 +204,8 @@ $ns attach-agent $n14 $sink11
 $ns attach-agent $n14 $sink18
 $ns attach-agent $n14 $sink20
 $ns attach-agent $n14 $sink23
+$ns attach-agent $n14 $sink27
+
 
 #Create traffic for RED
 set sink15 [new Agent/LossMonitor]
@@ -228,23 +236,23 @@ $ns attach-agent $n28 $sink28_2
 ###now connect clients to servers
 
 #RED connection --> server 7
-set Red7to15 [attach-cbr-traffic $n7 $sink15 1500 0.005 1 0]
-set Red7to16 [attach-cbr-traffic $n7 $sink16 1500 0.005 1 0]
-set Red7to17 [attach-cbr-traffic $n7 $sink17 1500 0.005 1 0]
-set Red7to19 [attach-cbr-traffic $n7 $sink19 1500 0.005 1 7019]
-set Red7to21 [attach-cbr-traffic $n7 $sink21 1500 0.005 1 0]
-set Red7to24 [attach-cbr-traffic $n7 $sink24 1500 0.005 1 0]
-set Red7to25 [attach-cbr-traffic $n7 $sink25 1500 0.005 1 0]
-set Red7to26 [attach-cbr-traffic $n7 $sink26 1500 0.005 1 0]
+set RED7to15 [attach-cbr-traffic $n7 $sink15 1500 0.005 1 0]
+set RED7to16 [attach-cbr-traffic $n7 $sink16 1500 0.005 1 0]
+set RED7to17 [attach-cbr-traffic $n7 $sink17 1500 0.005 1 0]
+set RED7to19 [attach-cbr-traffic $n7 $sink19 1500 0.005 1 7019]
+set RED7to21 [attach-cbr-traffic $n7 $sink21 1500 0.005 1 0]
+set RED7to24 [attach-cbr-traffic $n7 $sink24 1500 0.005 1 0]
+set RED7to25 [attach-cbr-traffic $n7 $sink25 1500 0.005 1 0]
+set RED7to26 [attach-cbr-traffic $n7 $sink26 1500 0.005 1 0]
 
 #BLUE connecton --> server 14
-set Blue14to8  [attach-exp-traffic $n14 $sink8 2000 0.5s 0.5s 2000000 0]
-set Blue14to9  [attach-exp-traffic $n14 $sink9 2000 0.5s 0.5s 2000000 0]
-set Blue14to11 [attach-exp-traffic $n14 $sink11 2000 0.5s 0.5s 2000000 0]
-set Blue14to18 [attach-exp-traffic $n14 $sink18 2000 0.5s 0.5s 2000000 0]
-set Blue14to20 [attach-exp-traffic $n14 $sink20 2000 0.5s 0.5s 2000000 0]
-set Blue14to23 [attach-exp-traffic $n14 $sink23 2000 0.5s 0.5s 2000000 0]
-set Blue14to27 [attach-exp-traffic $n14 $sink27 2000 0.5s 0.5s 2000000 14027]
+set BLUE14to8  [attach-exp-traffic $n14 $sink8 2000 0.5s 0.5s 2000000 0]
+set BLUE14to9  [attach-exp-traffic $n14 $sink9 2000 0.5s 0.5s 2000000 0]
+set BLUE14to11 [attach-exp-traffic $n14 $sink11 2000 0.5s 0.5s 2000000 0]
+set BLUE14to18 [attach-exp-traffic $n14 $sink18 2000 0.5s 0.5s 2000000 0]
+set BLUE14to20 [attach-exp-traffic $n14 $sink20 2000 0.5s 0.5s 2000000 0]
+set BLUE14to23 [attach-exp-traffic $n14 $sink23 2000 0.5s 0.5s 2000000 0]
+set BLUE14to27 [attach-exp-traffic $n14 $sink27 2000 0.5s 0.5s 2000000 14027]
 
 #Server 12
 #TCP at n12
@@ -300,8 +308,8 @@ $ns at 2.0s "$BLUE14to27 start"
 $ns at 3.0 "$GREEN12to28 start"
 $ns at 4.0 "$GREEN13to28 start"
 
-$ns rtmodel-at 6.0 down $n(2) $n(3)
-$ns rtmodel-at 7.0 up $n(2) $n(3)
+$ns rtmodel-at 6.0 down $n2 $n3
+$ns rtmodel-at 7.0 up $n2 $n3
 
 $ns at 10.0s "$RED7to15 stop"
 $ns at 10.0s "$RED7to16 stop"
@@ -324,7 +332,7 @@ $ns at 10.0s "$GREEN12to28 stop"
 $ns at 10.0s "$GREEN13to28 stop"
 
 #Wrap it up
-$ns at 10.0 "close"
+$ns at 10.0 "finish"
 
 #Run
 $ns run
